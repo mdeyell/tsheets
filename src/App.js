@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 
@@ -34,7 +33,13 @@ class Calendar extends React.Component {
     var obj  = {};
     obj[day]=hour;
     console.log("day is: "+ day + ", hour is: " + hour);
-    _this.setState(obj);
+    if(hour >= 0 && hour<=24){ 
+     _this.setState(obj);
+    }else{
+      obj[day]=8;
+      _this.setState(obj);
+      alert("Invalid hours entered on " + day);
+    }
   }
 
   render() {
