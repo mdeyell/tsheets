@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
+import io from "socket.io-client";
 
 
 class DayOfWeek extends React.Component {
@@ -13,7 +14,7 @@ class DayOfWeek extends React.Component {
   render() {
     const day = this.props.day;
     return (
-      <fieldset>
+      <fieldset className="awesome">
         <div>Hours on {day}</div>
         <input value={this.props.hours}
                onChange={this.handleChange} />
@@ -26,20 +27,41 @@ class DayOfWeek extends React.Component {
 class Calendar extends React.Component {
   constructor(props) {
     super(props);
-    this.state ={monday:0,tuesday:0,wednesday:0,thursday:0,friday:0,saturday:0,sunday:0}
+    this.socket = io('http://192.168.0.4:8080'); //change to localhost:8080 if lan connections are not desired
+    this.socket.emit('getMyHours', {
+  });
+    this.state={_this:this};
+    this.state ={monday:"",tuesday:"",wednesday:"",thursday:"",friday:"",saturday:"",sunday:""}
+    this.socket.on('hours', function(hours){
+        updateHours(hours);   
+    });
+    const updateHours = hours => {
+      //console.log(hours);
+      for(var day in hours){
+        var hoursWorked = {}
+        hoursWorked[day]=hours[day];
+        this.setState(hoursWorked);
+      }
+      console.log("after constructor state is: " + JSON.stringify(this.state));
+    };
   }
 
   onHourChange(day,hour,_this) {
-    var obj  = {};
-    obj[day]=hour;
     console.log("day is: "+ day + ", hour is: " + hour);
+    var hourChange  = {};
+    hourChange[day]=hour;
     if(hour >= 0 && hour<=24){ 
-     _this.setState(obj);
+     _this.setState(hourChange);
     }else{
-      obj[day]=8;
-      _this.setState(obj);
+      hourChange[day]=8;
+      _this.setState(hourChange);
       alert("Invalid hours entered on " + day);
+      return;
     }
+
+    _this.socket.emit('hoursChange',{
+           hourChange  
+    });
   }
 
   render() {
